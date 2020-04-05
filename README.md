@@ -13,7 +13,7 @@ rectangles to create a silhouette based on the boundaries of the view.
 
 **Important**: Views whose visibilities are set to either `View.INVISIBLE`
 or `View.GONE` will be ignored, as well as any views whose IDs are included
-in the `exclusions` list specified when initializing the `Trace`.
+in the `exclusions` list specified when identifying the target for `Trace`.
 
 ## Get it
 [![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)

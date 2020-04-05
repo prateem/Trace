@@ -11,8 +11,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val container = findViewById<ViewGroup>(R.id.traceContainer)
         val target = findViewById<ViewGroup>(R.id.traceTarget)
+        val container = findViewById<ViewGroup>(R.id.traceContainer)
 
         val trace = Trace(this)
             .of(target, exclusions = listOf())

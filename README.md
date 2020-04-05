@@ -11,8 +11,22 @@ from the result of `Path` object returned by the `Traceable.trace()` call.
 * If the View does not implement the interface, Trace will use rounded
 rectangles to create a silhouette based on the boundaries of the view.
 
+## Get it
+[![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)
+
+Available on jCenter.
+
+```
+implementation 'com.meetarp:trace:$traceVersion'
+```
+
+## Example
 An example app is available that will build the following to a device:
 
+### Visual
+<img src="https://raw.githubusercontent.com/prateem/Trace/master/trace.gif" width="360" height="740">
+
+### XML Layout
 ```xml
 <Screen>
     <ViewGroup id="traceTarget">
@@ -29,13 +43,25 @@ An example app is available that will build the following to a device:
 </Screen>
 ```
 
-<img src="https://raw.githubusercontent.com/prateem/Trace/master/trace.gif" width="360" height="740">
+### Activity
+```kotlin
+class MainActivity : AppCompatActivity() {
 
-## Get it
-[![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-Available on jCenter.
+        val target = findViewById<ViewGroup>(R.id.traceTarget)
+        val container = findViewById<ViewGroup>(R.id.traceContainer)
 
-```
-implementation 'com.meetarp:trace:$traceVersion'
+        val trace = Trace(this) // `this` here is context, since Trace inherits from View
+            .of(target, exclusions = listOf())
+            .colored(android.R.color.darker_gray) // Same as default
+            .shimmerColored(android.R.color.white) // Same as default
+            .also { it.startShimmer() }
+
+        container.addView(trace)
+    }
+
+}
 ```

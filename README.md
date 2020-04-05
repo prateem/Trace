@@ -20,15 +20,15 @@ An example app is available that will build the following to a device:
 <tr>
 <td>
     <pre lang="xml">
-    <ViewGroup id="traceTarget">
-      <TextView lines="1" />
-      <TextView lines="1" />
-      <TextView lines="2" />
-      <Square size="40dp" color="primary" />
-      <TraceableView actualSize="0" traceableOutput="doubleBubble" />
-    </ViewGroup>
-    <ViewGroup id="traceContainer" />
-    <Square size="200dp" color="accent" />
+    &lt;ViewGroup id="traceTarget">
+      &lt;TextView lines="1" />
+      &lt;TextView lines="1" />
+      &lt;TextView lines="2" />
+      &lt;Square size="40dp" color="primary" />
+      &lt;TraceableView actualSize="0" traceableOutput="doubleBubble" />
+    &lt;/ViewGroup>
+    &lt;ViewGroup id="traceContainer" />
+    &lt;Square size="200dp" color="accent" />
     </pre>
 </td>
 <td><img src="https://raw.githubusercontent.com/prateem/Trace/master/trace.gif" width="360" height="740"></td>

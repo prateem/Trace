@@ -27,6 +27,9 @@ An example app is available that will build the following to a device:
 <img src="https://raw.githubusercontent.com/prateem/Trace/master/trace.gif" width="360" height="740">
 
 ### XML Layout
+Pseudo-code is used for clarity of mapping to the visual(s) above.
+See [activity_main.xml](app/src/main/res/layout/activity_main.xml) for full/proper xml.
+
 ```xml
 <Screen>
     <ViewGroup id="traceTarget">
@@ -65,3 +68,19 @@ class MainActivity : AppCompatActivity() {
 
 }
 ```
+
+## Usage
+
+As in the example above, `Trace` is simply a `View` that is kicked off
+when `Trace.of()` is called. Due to this limitation, it can only be
+utilized programmatically.
+
+`Trace` exposes the following methods:
+
+|XML Attribute|Description|Defaults|
+|-------------|-----------|-------|
+|`of(ViewGroup, List<Int>)`|The ViewGroup is the trace target. The list of integers provided are the view IDs (if any) to ignore during trace.|N/A|
+|`colored(ColorRes)`|Set the color of the traced silhouette(s). Argument must be a color resource integer.|`android.R.color.darker_gray`|
+|`shimmerColored(ColorRes)`|Set the color of the shimmer. Argument must be a color resource integer.|`android.R.color.white`|
+|`startShimmer(Long)`|Start the shimmer animation. The argument provided is the period duration of the shimmer in milliseconds.|1000 ms|
+|`stopShimmer()`|End any shimmer animation that may be active.|N/A|

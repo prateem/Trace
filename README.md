@@ -1,4 +1,4 @@
-        [![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)
+[![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)
 
 # Trace
 Android library that can trace views to create silhouettes. Written in Kotlin.

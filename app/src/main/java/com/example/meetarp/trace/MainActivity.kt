@@ -11,13 +11,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val container = findViewById<ViewGroup>(R.id.container)
-        val group = findViewById<ViewGroup>(R.id.group)
+        val container = findViewById<ViewGroup>(R.id.traceContainer)
+        val target = findViewById<ViewGroup>(R.id.traceTarget)
 
         val trace = Trace(this)
-                .of(group, exclusions = listOf())
-                .colored(android.R.color.darker_gray)
-                .also { it.startShimmer() }
+            .of(target, exclusions = listOf())
+            .colored(android.R.color.darker_gray)
+            .also { it.startShimmer() }
 
         container.addView(trace)
     }

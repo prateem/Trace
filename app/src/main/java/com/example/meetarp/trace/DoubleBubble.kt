@@ -16,8 +16,8 @@ class DoubleBubble @JvmOverloads constructor(
     override fun trace(): Path {
         val path = Path()
 
-        path.addCircle(17f, 17f, 15f, Path.Direction.CW)
-        path.addCircle(162f, 27f, 25f, Path.Direction.CW)
+        path.addCircle(50f, 50f, 30f, Path.Direction.CW)
+        path.addCircle(160f, 120f, 50f, Path.Direction.CW)
 
         return path
     }

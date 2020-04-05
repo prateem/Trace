@@ -81,7 +81,7 @@ utilized programmatically.
 
 `Trace` exposes the following methods:
 
-|XML Attribute|Description|Defaults|
+|Method|Description|Defaults|
 |-------------|-----------|-------|
 |`of(ViewGroup, List<Int>)`|The ViewGroup is the trace target. The list of integers provided are the view IDs (if any) to ignore during trace.|N/A|
 |`colored(ColorRes)`|Set the color of the traced silhouette(s). Argument must be a color resource integer.|`android.R.color.darker_gray`|

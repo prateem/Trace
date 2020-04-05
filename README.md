@@ -31,7 +31,7 @@ An example app is available that will build the following to a device:
 <Square size="200dp" color="accent" />
 </pre>
 </td>
-<td><img src="https://raw.githubusercontent.com/prateem/Trace/master/trace.gif" width="360" height="640"></td>
+<td><img src="https://raw.githubusercontent.com/prateem/Trace/master/trace.gif" width="360" height="740"></td>
 </tr>
 </tbody>
 </table>

@@ -1,0 +1,40 @@
+apply plugin: 'com.jfrog.bintray'
+
+group 'com.meetarp'
+version libVersion
+
+project.ext {
+    mavGitUrl = 'https://github.com/prateem/Trace.git'
+    mavProjectName = 'Trace'
+    mavLibraryLicenses = ["MIT":'https://choosealicense.com/licenses/mit/']
+    mavLibraryDescription = "Android library that can trace views to create silhouettes. Written in Kotlin."
+    mavPublishToMavenLocal = true
+    mavSiteUrl = 'https://github.com/prateem/Trace'
+}
+
+def properties = new Properties()
+properties.load(new FileInputStream("local.properties"))
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    publications = ['mavenPublish']
+    configurations = ['archives']
+    override = true
+    pkg {
+        repo = 'maven'
+        name = 'trace'
+        description = "Android library that can trace views to create silhouettes. Written in Kotlin."
+        publicDownloadNumbers = true
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/prateem/Trace'
+        version {
+            name = this.version
+            desc = "Version ${this.version}"
+            released = new Date()
+            vcsTag = this.version
+        }
+    }
+}
+
+apply from: 'https://raw.githubusercontent.com/sky-uk/gradle-maven-plugin/master/gradle-mavenizer.gradle'

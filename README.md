@@ -19,7 +19,7 @@ An example app is available that will build the following to a device:
 <tbody>
 <tr>
 <td>
-    ```xml
+    <pre lang="xml">
     <ViewGroup id="traceTarget">
       <TextView lines="1" />
       <TextView lines="1" />
@@ -29,7 +29,7 @@ An example app is available that will build the following to a device:
     </ViewGroup>
     <ViewGroup id="traceContainer" />
     <Square size="200dp" color="accent" />
-    ```
+    </pre>
 </td>
 <td><img src="https://raw.githubusercontent.com/prateem/Trace/master/trace.gif" width="360" height="740"></td>
 </tr>

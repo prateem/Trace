@@ -11,6 +11,10 @@ from the result of `Path` object returned by the `Traceable.trace()` call.
 * If the View does not implement the interface, Trace will use rounded
 rectangles to create a silhouette based on the boundaries of the view.
 
+**Important**: Views whose visibilities are set to either `View.INVISIBLE`
+or `View.GONE` will be ignored, as well as any views whose IDs are included
+in the `exclusions` list specified when initializing the `Trace`.
+
 ## Get it
 [![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)
 

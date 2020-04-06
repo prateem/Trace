@@ -86,8 +86,6 @@ class Trace @JvmOverloads constructor(
             shimmerShape.lineTo(0f, boundsRect.height())
             shimmerShape.close()
 
-            updateShimmerShader()
-
             Log.d(LOG_TAG, "BoundsRect: $boundsRect")
             requestLayout()
         }
@@ -112,7 +110,6 @@ class Trace @JvmOverloads constructor(
      */
     fun shimmerColored(@ColorRes color: Int): Trace {
         shimmerColor = ContextCompat.getColor(context, color)
-        updateShimmerShader()
         invalidate()
         return this
     }
@@ -125,6 +122,7 @@ class Trace @JvmOverloads constructor(
         canvas.drawPath(traced, tracePaint)
 
         if (shimmerAnimator != null) {
+            updateShimmerShader()
             shimmerPath.reset()
 
             // Copy the shape and offset it. Easier to copy+offset than to reset previous offsets.
@@ -228,19 +226,20 @@ class Trace @JvmOverloads constructor(
     }
 
     private fun updateShimmerShader() {
+        val shimmerStartPos = boundsRect.right * (shimmerProgress / 100f)
+        val shimmerShapeWidth = boundsRect.width() * shimmerWidth
         shimmerPaint.shader = LinearGradient(
+            shimmerStartPos,
             0f,
-            0f,
-            boundsRect.width(),
+            shimmerStartPos + shimmerShapeWidth,
             0f,
             intArrayOf(
                 transparent,
                 shimmerColor,
-                transparent,
                 shimmerColor,
                 transparent
             ),
-            floatArrayOf(0.0f, 0.25f, 0.5f, 0.75f, 1.0f),
+            floatArrayOf(0.0f, 0.25f, 0.75f, 1.0f),
             Shader.TileMode.REPEAT
         )
     }

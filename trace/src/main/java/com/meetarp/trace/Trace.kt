@@ -13,6 +13,21 @@ import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 
+/**
+ * Trace will iterate through the views in a given [ViewGroup] hierarchy and create
+ * silhouettes based on whether or not the [View] implements the interface [Traceable]:
+ *
+ * If the View does implement [Traceable], Trace will create a silhouette
+ * from the result of [Path] object returned by the [Traceable.trace] call.
+ *
+ * If the View does not implement the interface, Trace will use rounded
+ * rectangles to create a silhouette based on the boundaries of the view.
+ *
+ * Important: Views whose visibilities are set to either [View.INVISIBLE]
+ * or [View.GONE] will be ignored, as well as any views whose IDs are included
+ * in the `exclusions` list specified when identifying the target for `Trace`
+ * via [Trace.of].
+ */
 class Trace @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -79,12 +94,22 @@ class Trace @JvmOverloads constructor(
         return this
     }
 
+    /**
+     * Set the [color] for the traced silhouette segments.
+     * Must be a color resource integer.
+     * If not set specifically, the default is [android.R.color.darker_gray]
+     */
     fun colored(@ColorRes color: Int): Trace {
         tracePaint.color = ContextCompat.getColor(context, color)
         invalidate()
         return this
     }
 
+    /**
+     * Set the [color] for the shimmer that animates when [startShimmer] is running.
+     * Must be a color resource integer.
+     * If not set specifically, the default is [android.R.color.white]
+     */
     fun shimmerColored(@ColorRes color: Int): Trace {
         shimmerColor = ContextCompat.getColor(context, color)
         updateShimmerShader()
@@ -171,6 +196,10 @@ class Trace @JvmOverloads constructor(
         return path
     }
 
+    /**
+     * Start the shimmer animation over the traced silhouette.
+     * @param shimmerSpeed The period of the shimmer in milliseconds. Default 1000.
+     */
     fun startShimmer(shimmerSpeed: Long = 1000) {
         shimmerProgress = 0
         shimmerAnimator = ValueAnimator.ofInt(0, 100)
@@ -187,6 +216,9 @@ class Trace @JvmOverloads constructor(
             }
     }
 
+    /**
+     * Stop the shimmer animation over the traced silhouette.
+     */
     fun stopShimmer() {
         shimmerAnimator?.cancel()
 

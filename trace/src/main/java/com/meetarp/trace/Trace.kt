@@ -3,13 +3,7 @@ package com.meetarp.trace
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
-import android.graphics.Rect
-import android.graphics.Shader
-import android.graphics.LinearGradient
+import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -119,61 +113,59 @@ class Trace @JvmOverloads constructor(
         }
     }
 
-    private fun traceInternal(root: ViewGroup, path: Path, exclusions: List<Int>): Path {
-        val children = (0 until root.childCount).map { root.getChildAt(it) }
+    private fun traceInternal(
+        root: ViewGroup,
+        path: Path,
+        exclusions: List<Int>,
+        offset: PointF = PointF(0f, 0f)
+    ): Path {
+        val children = (0 until root.childCount).map { i -> root.getChildAt(i) }
 
         for (child in children) {
             if (child.id in exclusions || child.visibility != VISIBLE)
                 continue
 
-            val childLeft = child.left.toFloat()
-            val childTop = child.top.toFloat()
+            val childLeft = child.left.toFloat() + offset.x
+            val childTop = child.top.toFloat() + offset.y
             path.moveTo(childLeft, childTop)
 
-            if (child is Traceable) {
-                path.addPath(child.trace(), childLeft, childTop)
-                continue
-            }
+            when (child) {
+                is Traceable -> path.addPath(child.trace(), childLeft, childTop)
+                is ViewGroup -> traceInternal(child, path, exclusions, PointF(childLeft, childTop))
+                is TextView -> {
+                    val textContent = child.text.toString()
+                    val lineCount = child.lineCount
+                    val lineHeight = child.paint.fontMetrics.run { bottom - top }
 
-            if (child is ViewGroup) {
-                traceInternal(child, path, exclusions)
-                continue
-            }
+                    val textBounds = Rect()
+                    for (line in 0 until lineCount) {
+                        val textForLine = textContent.substring(
+                            child.layout.getLineStart(line),
+                            child.layout.getLineEnd(line)
+                        )
 
-            if (child is TextView) {
-                val textContent = child.text.toString()
-                val lineCount = child.lineCount
-                val lineHeight = child.paint.fontMetrics.run { bottom - top }
+                        child.paint.getTextBounds(textForLine, 0, textForLine.length, textBounds)
 
-                val textBounds = Rect()
-                for (line in 0 until lineCount) {
-                    val textForLine = textContent.substring(
-                        child.layout.getLineStart(line),
-                        child.layout.getLineEnd(line)
-                    )
-
-                    child.paint.getTextBounds(textForLine, 0, textForLine.length, textBounds)
-
-                    val offset = (line * lineHeight)
-                    val rect = RectF(
-                        childLeft + 2.5f,
-                        childTop + 2.5f + offset,
-                        childLeft + textBounds.width() - 2.5f,
-                        childTop + lineHeight - 2.5f + offset
-                    )
-                    path.addRoundRect(rect, 10f, 10f, Path.Direction.CW)
+                        val lineOffset = (line * lineHeight)
+                        val rect = RectF(
+                            childLeft + SPACE,
+                            childTop + SPACE + lineOffset,
+                            childLeft + textBounds.width() - SPACE,
+                            childTop + lineHeight - SPACE + lineOffset
+                        )
+                        path.addRoundRect(rect, R_RECT_RADIUS, R_RECT_RADIUS, Path.Direction.CW)
+                    }
                 }
-
-                continue
+                else -> {
+                    val rect = RectF(
+                        childLeft + SPACE,
+                        childTop + SPACE,
+                        childLeft + child.measuredWidth - SPACE,
+                        childTop + child.measuredHeight - SPACE
+                    )
+                    path.addRoundRect(rect, R_RECT_RADIUS, R_RECT_RADIUS, Path.Direction.CW)
+                }
             }
-
-            val rect = RectF(
-                childLeft + 2.5f,
-                childTop + 2.5f,
-                childLeft + child.measuredWidth - 2.5f,
-                childTop + child.measuredHeight - 2.5f
-            )
-            path.addRoundRect(rect, 10f, 10f, Path.Direction.CW)
         }
 
         return path
@@ -233,6 +225,8 @@ class Trace @JvmOverloads constructor(
 
     companion object {
         private const val LOG_TAG = "Trace"
+        private const val SPACE = 2.5f
+        private const val R_RECT_RADIUS = 10f
     }
 
 }

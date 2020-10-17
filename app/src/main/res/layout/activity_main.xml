@@ -1,67 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/traceTarget"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:padding="12dp"
+        tools:context=".MainActivity">
 
-        <TextView
+        <CheckBox
+            android:id="@+id/toggle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Some text" />
+            android:text="Do the thing..."
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <com.meetarp.trace.TraceContainer
+            android:id="@+id/traceContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="This is slightly more text..." />
+            android:layout_marginTop="8dp"
+            android:padding="16dp"
+            app:layout_constraintTop_toBottomOf="@id/toggle"
+            app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="This is much more text... so much more that it probably spans multiple lines! How exciting!" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <View
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_margin="16dp"
-            android:background="@color/colorPrimary"
-            app:layout_constraintTop_toBottomOf="@id/traceContainer"
-            app:layout_constraintStart_toStartOf="parent"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Some text" />
 
-        <com.example.meetarp.trace.DoubleBubble
-            android:id="@+id/doubleBubble"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="This is much more text... so much more that it probably spans multiple lines! How exciting!" />
 
-    </LinearLayout>
+                <View
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_margin="12dp"
+                    android:background="@color/colorAccent"/>
 
-    <FrameLayout
-        android:id="@+id/traceContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        app:layout_constraintTop_toBottomOf="@id/traceTarget"
-        app:layout_constraintStart_toStartOf="parent" />
+                <Button
+                    android:id="@+id/test"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button" />
 
-    <View
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_margin="16dp"
-        android:background="@color/colorAccent"
-        app:layout_constraintTop_toBottomOf="@id/traceContainer"
-        app:layout_constraintStart_toStartOf="parent"/>
+                <RadioButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Is this thing on?"
+                    android:enabled="false" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <com.example.meetarp.trace.DoubleBubble
+                    android:id="@+id/doubleBubble"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp" />
+
+            </LinearLayout>
+
+        </com.meetarp.trace.TraceContainer>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

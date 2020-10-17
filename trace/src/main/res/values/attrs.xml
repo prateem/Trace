@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TraceContainer">
+        <attr name="trace_silhouetteColor" format="color|reference" />
+        <attr name="trace_shimmerColor" format="color|reference" />
+    </declare-styleable>
+</resources>

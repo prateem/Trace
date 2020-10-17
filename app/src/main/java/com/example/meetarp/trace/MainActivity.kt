@@ -2,8 +2,8 @@ package com.example.meetarp.trace
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.ViewGroup
-import com.meetarp.trace.Trace
+import android.widget.CheckBox
+import com.meetarp.trace.TraceContainer
 
 class MainActivity : AppCompatActivity() {
 
@@ -11,15 +11,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val target = findViewById<ViewGroup>(R.id.traceTarget)
-        val container = findViewById<ViewGroup>(R.id.traceContainer)
+        val toggle = findViewById<CheckBox>(R.id.toggle)
+        val traceContainer = findViewById<TraceContainer>(R.id.traceContainer)
 
-        val trace = Trace(this)
-            .of(target, exclusions = listOf())
-            .colored(android.R.color.darker_gray)
-            .also { it.startShimmer() }
-
-        container.addView(trace)
+        toggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked)
+                traceContainer.startShimmer()
+            else
+                traceContainer.stopShimmer()
+        }
     }
 
 }

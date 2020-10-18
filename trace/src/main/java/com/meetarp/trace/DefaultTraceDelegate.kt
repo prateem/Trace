@@ -21,7 +21,7 @@ import kotlin.math.min
 internal object DefaultTraceDelegate : TraceDelegate {
 
     // This implementation will always return true.
-    override fun handle(view: View, path: Path, exclusions: List<Int>, offset: PointF): Boolean {
+    override fun handle(view: View, path: Path, offset: PointF): Boolean {
         if (!view.isVisible) {
             return true
         }

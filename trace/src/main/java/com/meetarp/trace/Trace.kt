@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PointF
@@ -22,7 +23,9 @@ import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.sin
 
 /**
  * Trace will iterate through the views in a given [View] hierarchy and create
@@ -37,9 +40,9 @@ import kotlin.math.max
  * delegate will handle some basic views elegantly but otherwise utilizes rounded rectangles
  * to create a silhouette based on the boundaries of the view.
  *
- * Note: Views whose IDS are found in the `exclusions` list are ignored. The exclusions list can
- * be specified when calling [TraceContainer.startShimmer] or when identifying the target for
- * `Trace` via [Trace.of].
+ * If the lambda `shouldExcludeView` is defined and returns true for a given View, it will be
+ * ignored and not drawn. Said lambda can be specified when calling [TraceContainer.startShimmer]
+ * or when identifying the target for tracing via [Trace.of].
  *
  * Note: The default implementation of [TraceDelegate] will ignore views whose visibilities are
  * set to either [View.INVISIBLE] or [View.GONE].
@@ -57,29 +60,22 @@ class Trace @JvmOverloads constructor(
             it.color = ContextCompat.getColor(context, android.R.color.darker_gray)
             it.isAntiAlias = true
         }
-    private val boundsRect = RectF()
 
-    private var shimmerWidth = 0.33f
+    private var shimmerColor = ContextCompat.getColor(context, android.R.color.white)
     private val shimmerPaint = Paint()
         .also {
-            it.alpha = (255 * 0.15).toInt()
+            it.alpha = (255 * 0.35).toInt()
             it.isAntiAlias = true
         }
 
-    private var shimmerColor = ContextCompat.getColor(context, android.R.color.white)
-    private val shimmerShape = Path()
-    private val shimmerShapeOffset = Path()
-    private val shimmerPath = Path()
-
+    private val boundsRect = RectF()
     private var shimmerAnimator: Animator? = null
     private var shimmerProgress = 0
-
-    private val transparent = ContextCompat.getColor(context, android.R.color.transparent)
 
     /**
      * Perform a trace on all the views in the hierarchy of the given [root].
      * The trace will cause this view to draw a silhouette of items in the given hierarchy.
-     * Views whose IDs can be found in [exclusions] will be ignored.
+     * Views for which [shouldExcludeView] returns true (if defined) will be ignored.
      *
      * Any views in the hierarchy that implement [Traceable] will defer to its implementation of
      * [Traceable.trace] to determine the path(s) to add to this Trace.
@@ -91,7 +87,7 @@ class Trace @JvmOverloads constructor(
      * @param root The root view of the desired trace
      * @param delegate The user-defined [TraceDelegate] to handle drawing silhouettes
      *  for non-[Traceable] views.
-     * @param exclusions IDs to exclude in the trace
+     * @param shouldExcludeView Lambda determining if a view should be excluded or not
      *
      * @see Traceable
      * @see TraceDelegate
@@ -99,7 +95,7 @@ class Trace @JvmOverloads constructor(
     fun of(
         root: View,
         delegate: TraceDelegate? = null,
-        exclusions: List<Int> = emptyList()
+        shouldExcludeView: ((View) -> Boolean)? = null
     ): Trace {
         root.post {
             // We need to set the initial offset such that we negate the effect of
@@ -116,7 +112,7 @@ class Trace @JvmOverloads constructor(
                 initialOffset.offset(-1f * root.left, 0f)
             }
 
-            tracedPath = traceInternal(root, Path(), exclusions, initialOffset, delegate)
+            tracedPath = traceInternal(root, Path(), delegate, initialOffset, shouldExcludeView)
                 .also { path -> path.computeBounds(boundsRect, true) }
 
             boundsRect.set(
@@ -126,11 +122,7 @@ class Trace @JvmOverloads constructor(
                 boundsRect.height()
             )
 
-            shimmerShape.reset()
-            shimmerShape.lineTo(boundsRect.width() * shimmerWidth, 0f)
-            shimmerShape.lineTo(boundsRect.width() * shimmerWidth, boundsRect.height())
-            shimmerShape.lineTo(0f, boundsRect.height())
-            shimmerShape.close()
+            setShimmerShader()
 
             Log.d(LOG_TAG, "BoundsRect: $boundsRect")
             requestLayout()
@@ -142,9 +134,9 @@ class Trace @JvmOverloads constructor(
     private fun traceInternal(
         view: View,
         path: Path,
-        exclusions: List<Int>,
+        delegate: TraceDelegate?,
         offset: PointF,
-        delegate: TraceDelegate?
+        shouldExcludeView: ((View) -> Boolean)?
     ): Path {
         val viewLeft = max(view.left.toFloat() + offset.x, 0f)
         val viewTop = max(view.top.toFloat() + offset.y, 0f)
@@ -167,21 +159,22 @@ class Trace @JvmOverloads constructor(
         }
 
         return when (view) {
-            is ViewGroup -> traceViewGroup(view, path, exclusions, newOffset, delegate)
-            else -> traceView(view, path, exclusions, newOffset, delegate)
+            is Traceable -> traceView(view, path, delegate, newOffset, shouldExcludeView)
+            is ViewGroup -> traceViewGroup(view, path, delegate, newOffset, shouldExcludeView)
+            else -> traceView(view, path, delegate, newOffset, shouldExcludeView)
         }
     }
 
     private fun traceViewGroup(
         root: ViewGroup,
         path: Path,
-        exclusions: List<Int>,
+        delegate: TraceDelegate?,
         offset: PointF,
-        delegate: TraceDelegate?
+        shouldExcludeView: ((View) -> Boolean)?
     ): Path {
         val children = (0 until root.childCount).map { i -> root.getChildAt(i) }
         for (child in children) {
-            traceInternal(child, path, exclusions, offset, delegate)
+            traceInternal(child, path, delegate, offset, shouldExcludeView)
         }
         return path
     }
@@ -189,11 +182,11 @@ class Trace @JvmOverloads constructor(
     private fun traceView(
         view: View,
         path: Path,
-        exclusions: List<Int>,
+        delegate: TraceDelegate?,
         offset: PointF,
-        delegate: TraceDelegate?
+        shouldExcludeView: ((View) -> Boolean)?
     ): Path {
-        if (view.id in exclusions)
+        if (shouldExcludeView?.invoke(view) == true)
             return path
 
         val viewLeft = offset.x
@@ -205,6 +198,7 @@ class Trace @JvmOverloads constructor(
             if (view.isVisible) {
                 val tracedPath = view.trace()
                 val bounds = RectF().also { tracedPath.computeBounds(it, true) }
+
                 val left =
                     if (view.layoutDirection == LayoutDirection.RTL)
                         viewLeft - bounds.width()
@@ -219,10 +213,10 @@ class Trace @JvmOverloads constructor(
 
         // If a user-defined delegate exists and handles the given view, then move on.
         // Otherwise, hand-off to the default delegate.
-        if (delegate?.handle(view, path, exclusions, offset) == true) {
+        if (delegate?.handle(view, path, offset) == true) {
             return path
         }
-        DefaultTraceDelegate.handle(view, path, exclusions, offset)
+        DefaultTraceDelegate.handle(view, path, offset)
 
         return path
     }
@@ -265,9 +259,9 @@ class Trace @JvmOverloads constructor(
 
     /**
      * Start the shimmer animation over the traced silhouette.
-     * @param shimmerSpeed The period of the shimmer in milliseconds. Default 1000.
+     * @param shimmerSpeed The period of the shimmer in milliseconds. Default 1200.
      */
-    fun startShimmer(shimmerSpeed: Long = 1000) {
+    fun startShimmer(shimmerSpeed: Long = 1200) {
         if (shimmerAnimator != null) {
             if (shimmerAnimator?.duration != shimmerSpeed) {
                 shimmerAnimator?.duration = shimmerSpeed
@@ -306,20 +300,10 @@ class Trace @JvmOverloads constructor(
         canvas ?: return
         val traced = tracedPath ?: return
 
-        canvas.drawPath(traced, tracePaint)
-
         if (shimmerAnimator != null) {
             updateShimmerShader()
-            shimmerPath.reset()
-
-            // Copy the shape and offset it. Easier to copy+offset than to reset previous offsets.
-            shimmerShapeOffset.reset()
-            shimmerShapeOffset.set(shimmerShape)
-            shimmerShapeOffset.offset(boundsRect.right * (shimmerProgress / 100f), 0f)
-
-            // Draw only the intersection of the (offset) shape and traced paths for shimmering
-            shimmerPath.op(shimmerShapeOffset, traced, Path.Op.INTERSECT)
-            canvas.drawPath(shimmerPath, shimmerPaint)
+            canvas.drawPath(traced, tracePaint)
+            canvas.drawPath(traced, shimmerPaint)
         }
     }
 
@@ -333,23 +317,32 @@ class Trace @JvmOverloads constructor(
         }
     }
 
-    private fun updateShimmerShader() {
-        val shimmerStartPos = boundsRect.right * (shimmerProgress / 100f)
-        val shimmerShapeWidth = boundsRect.width() * shimmerWidth
+    private fun setShimmerShader() {
+        val angle = Math.toRadians(20.0)
+        val shimmerShapeWidth = resources.getDimensionPixelSize(R.dimen.shimmer_width)
+        val transparent = ContextCompat.getColor(context, android.R.color.transparent)
         shimmerPaint.shader = LinearGradient(
-            shimmerStartPos,
             0f,
-            shimmerStartPos + shimmerShapeWidth,
             0f,
+            cos(angle).toFloat() * shimmerShapeWidth,
+            sin(angle).toFloat() * shimmerShapeWidth,
             intArrayOf(
                 transparent,
                 shimmerColor,
-                shimmerColor,
                 transparent
             ),
-            floatArrayOf(0.0f, 0.25f, 0.75f, 1.0f),
-            Shader.TileMode.REPEAT
+            floatArrayOf(0.0f, 0.5f, 1.0f),
+            Shader.TileMode.CLAMP
         )
+    }
+
+    private fun updateShimmerShader() {
+        val shimmerStartPos = boundsRect.right * (shimmerProgress / 100f)
+        shimmerPaint.shader?.let { shader ->
+            shader.setLocalMatrix(
+                Matrix().apply { setTranslate(shimmerStartPos, 0f) }
+            )
+        }
     }
 
     companion object {

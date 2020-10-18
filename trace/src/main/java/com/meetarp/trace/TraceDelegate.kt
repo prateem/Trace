@@ -12,7 +12,6 @@ interface TraceDelegate {
      *
      * @param [view] A view whose silhouette has not yet been created yet.
      * @param [path] The [Path] object that hosts silhouettes for views being traced.
-     * @param [exclusions] List of View IDs to exclude from being traced.
      * @param [offset] The left and top offsets of [view] in relation to the
      *      original trace target's left and top position.
      *
@@ -23,7 +22,6 @@ interface TraceDelegate {
     fun handle(
         view: View,
         path: Path,
-        exclusions: List<Int>,
         offset: PointF
     ): Boolean
 

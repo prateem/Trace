@@ -49,9 +49,9 @@ class TraceContainer @JvmOverloads constructor(
     }
 
     fun startShimmer(
-        shimmerSpeed: Long = 1000,
+        shimmerSpeed: Long = 1200,
         delegate: TraceDelegate? = null,
-        exclusions: List<Int> = emptyList()
+        shouldExcludeView: ((View) -> Boolean)? = null
     ) {
         if (childCount == 0) {
             return
@@ -65,7 +65,7 @@ class TraceContainer @JvmOverloads constructor(
         val target = getChildAt(0)
         allowSecondChild = true
         trace = Trace(context)
-            .of(target, delegate, exclusions)
+            .of(target, delegate, shouldExcludeView)
             .colored(traceSilhouetteColor)
             .shimmerColored(traceShimmerColor)
             .also { it.startShimmer(shimmerSpeed) }

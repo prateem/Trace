@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.View
 import com.meetarp.trace.Traceable
 
@@ -33,7 +34,7 @@ class DoubleBubble @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        setMeasuredDimension(0, 0)
+        setMeasuredDimension(230, 190)
     }
 
 }

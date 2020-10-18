@@ -21,13 +21,15 @@ import kotlin.math.min
 internal object DefaultTraceDelegate : TraceDelegate {
 
     // This implementation will always return true.
-    override fun handle(view: View, path: Path, exclusion: List<Int>, offset: PointF): Boolean {
+    override fun handle(view: View, path: Path, exclusions: List<Int>, offset: PointF): Boolean {
         if (!view.isVisible) {
             return true
         }
 
         val viewLeft = offset.x
         val viewTop = offset.y
+
+        path.moveTo(viewLeft, viewTop)
 
         // Elegantly handle some specific view types...
         // ... otherwise make a simple rounded rect based on bounds
@@ -58,8 +60,33 @@ internal object DefaultTraceDelegate : TraceDelegate {
                             viewTop + (view.height / 2) + (checkboxSizeY / 2)
                         )
                     }
+
                     path.addRoundRect(
                         checkboxBounds,
+                        R_RECT_RADIUS,
+                        R_RECT_RADIUS,
+                        Path.Direction.CW
+                    )
+                    path.addRoundRect(
+                        RectF(checkboxBounds)
+                            .also {
+                                it.inset(
+                                    0.05f * checkboxBounds.width(),
+                                    0.05f * checkboxBounds.height()
+                                )
+                            },
+                        R_RECT_RADIUS,
+                        R_RECT_RADIUS,
+                        Path.Direction.CCW
+                    )
+                    path.addRoundRect(
+                        RectF(checkboxBounds)
+                            .also {
+                                it.inset(
+                                    0.1f * checkboxBounds.width(),
+                                    0.1f * checkboxBounds.height()
+                                )
+                            },
                         R_RECT_RADIUS,
                         R_RECT_RADIUS,
                         Path.Direction.CW
@@ -84,6 +111,8 @@ internal object DefaultTraceDelegate : TraceDelegate {
 
                     val radius = 0.33f * buttonWidth
                     path.addCircle(radioCenter.x, radioCenter.y, radius, Path.Direction.CW)
+                    path.addCircle(radioCenter.x, radioCenter.y, 0.90f * radius, Path.Direction.CCW)
+                    path.addCircle(radioCenter.x, radioCenter.y, 0.80f * radius, Path.Direction.CW)
                 }
 
                 createMultilineTextPath(view, path, offset)

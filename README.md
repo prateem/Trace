@@ -107,7 +107,7 @@ calling `Trace.of()`. Shimmer must be controlled programmatically.
 
 | Method or attribute | Description | Defaults |
 |-|-|-|
-| `startShimmer(Long, TraceDelegate, Lambda&ltView->Boolean&gt;)` | Start the shimmer animation with the given period duration for the shimmer in milliseconds.<br>Views for which lambda invocations return true will be ignored during trace. | Long = 1200 ms<br>TraceDelegate = null<br>Lambda = null |
+| `startShimmer(Long, TraceDelegate, Lambda<View->Boolean>)` | Start the shimmer animation with the given period duration for the shimmer in milliseconds.<br>Views for which lambda invocations return true will be ignored during trace. | Long = 1200 ms<br>TraceDelegate = null<br>Lambda = null |
 | `stopShimmer()` | End any shimmer animation that may be active. | N/A |
 | `app:trace_silhouetteColor` (XML) | Set the color used by Trace to draw the silhouettes. | `android.R.color.darker_gray` |
 | `app:trace_shimmerColor` (XML) | Set the color used by Trace for the shimmer. | `android.R.color.white` |
@@ -116,7 +116,7 @@ calling `Trace.of()`. Shimmer must be controlled programmatically.
 
 | Method | Description | Defaults |
 |-|-|-|
-| `of(View, TraceDelegate, Lambda&ltView->Boolean&gt;)` | Identify the given View as the trace target.<br>Views for which lambda invocations return true will be ignored during trace. | N/A<br>TraceDelegate = null<br>Lambda = null |
+| `of(View, TraceDelegate, Lambda<View->Boolean>)` | Identify the given View as the trace target.<br>Views for which lambda invocations return true will be ignored during trace. | N/A<br>TraceDelegate = null<br>Lambda = null |
 | `colored(ColorInt)` | Set the color of the traced silhouette(s). Argument must be a color integer. | Darker Gray |
 | `setColorResource(ColorRes)` | Set the color of the traced silhouette(s). Argument must be a color resource integer. | `android.R.color.darker_gray` |
 | `shimmerColored(ColorInt)` | Set the color of the shimmer. Argument must be a color integer. | White |

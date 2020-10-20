@@ -17,10 +17,11 @@ class MainActivity : AppCompatActivity() {
         val traceContainer = findViewById<TraceContainer>(R.id.traceContainer)
 
         toggle.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked)
+            if (isChecked) {
                 traceContainer.startShimmer()
-            else
+            } else {
                 traceContainer.stopShimmer()
+            }
         }
     }
 

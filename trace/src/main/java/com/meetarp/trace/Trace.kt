@@ -1,7 +1,5 @@
 package com.meetarp.trace
 
-import android.animation.Animator
-import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.LinearGradient
@@ -13,7 +11,6 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.util.AttributeSet
 import android.util.LayoutDirection
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
@@ -22,19 +19,18 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
 
 /**
  * Trace will iterate through the views in a given [View] hierarchy and create
- * silhouettes based on whether or not the [View] implements the interface [Traceable]:
+ * silhouettes based on whether or not the [View] implements the interface [Traceable].
  *
- * If a View does implement [Traceable], Trace will create a silhouette
- * from the result of [Path] object returned by the [Traceable.trace] call.
+ * * If a View does implement [Traceable], Trace will create a silhouette
+ * from the result of the [Path] object returned by the [Traceable.trace] call.
  *
- * If a View does not implement the [Traceable] interface, Trace will try to use the user-provided
+ * * If a View does not implement the [Traceable] interface, Trace will try to use the user-provided
  * [TraceDelegate], if one was supplied. If a delegate isn't provided or if [TraceDelegate.handle]
  * does not return true, then Trace will hand-off to the [DefaultTraceDelegate]. The default
  * delegate will handle some basic views elegantly but otherwise utilizes rounded rectangles
@@ -69,8 +65,10 @@ class Trace @JvmOverloads constructor(
         }
 
     private val boundsRect = RectF()
-    private var shimmerAnimator: Animator? = null
-    private var shimmerProgress = 0
+    private var isShimmering = false
+    private var synchronizer: ShimmerSynchronizer? = null
+
+    init { setShimmerShader() }
 
     /**
      * Perform a trace on all the views in the hierarchy of the given [root].
@@ -122,9 +120,6 @@ class Trace @JvmOverloads constructor(
                 boundsRect.height()
             )
 
-            setShimmerShader()
-
-            Log.d(LOG_TAG, "BoundsRect: $boundsRect")
             requestLayout()
         }
 
@@ -216,7 +211,7 @@ class Trace @JvmOverloads constructor(
         if (delegate?.handle(view, path, offset) == true) {
             return path
         }
-        DefaultTraceDelegate.handle(view, path, offset)
+        DefaultTraceDelegate.getInstance().handle(view, path, offset)
 
         return path
     }
@@ -258,40 +253,31 @@ class Trace @JvmOverloads constructor(
     }
 
     /**
+     * Set the [ShimmerSynchronizer] to be used to sync Trace instances with.
+     */
+    fun syncWith(sync: ShimmerSynchronizer?): Trace {
+        synchronizer = sync
+        return this
+    }
+
+    /**
      * Start the shimmer animation over the traced silhouette.
      * @param shimmerSpeed The period of the shimmer in milliseconds. Default 1200.
      */
     fun startShimmer(shimmerSpeed: Long = 1200) {
-        if (shimmerAnimator != null) {
-            if (shimmerAnimator?.duration != shimmerSpeed) {
-                shimmerAnimator?.duration = shimmerSpeed
-            }
-            return
-        }
+        val sync = synchronizer ?: ShimmerSynchronizer(shimmerSpeed)
+        synchronizer = sync
 
-        shimmerProgress = 0
-        shimmerAnimator = ValueAnimator.ofInt(0, 100)
-            .also { anim ->
-                anim.duration = shimmerSpeed
-                anim.interpolator = FastOutSlowInInterpolator()
-                anim.addUpdateListener {
-                    shimmerProgress = anim.animatedValue as Int
-                    invalidate()
-                }
-                anim.repeatCount = ValueAnimator.INFINITE
-                anim.repeatMode = ValueAnimator.RESTART
-                anim.start()
-            }
+        isShimmering = true
+        sync.register(this)
     }
 
     /**
      * Stop the shimmer animation over the traced silhouette.
      */
     fun stopShimmer() {
-        shimmerAnimator?.cancel()
-
-        shimmerAnimator = null
-        shimmerProgress = 0
+        synchronizer?.unregister(this)
+        isShimmering = false
         invalidate()
     }
 
@@ -300,10 +286,13 @@ class Trace @JvmOverloads constructor(
         canvas ?: return
         val traced = tracedPath ?: return
 
-        if (shimmerAnimator != null) {
-            updateShimmerShader()
-            canvas.drawPath(traced, tracePaint)
-            canvas.drawPath(traced, shimmerPaint)
+        canvas.drawPath(traced, tracePaint)
+
+        synchronizer?.let {
+            if (it.isStarted && isShimmering) {
+                updateShimmerShader(it)
+                canvas.drawPath(traced, shimmerPaint)
+            }
         }
     }
 
@@ -336,17 +325,13 @@ class Trace @JvmOverloads constructor(
         )
     }
 
-    private fun updateShimmerShader() {
-        val shimmerStartPos = boundsRect.right * (shimmerProgress / 100f)
+    private fun updateShimmerShader(sync: ShimmerSynchronizer) {
+        val shimmerStartPos = boundsRect.right * (sync.shimmerProgress / 100f)
         shimmerPaint.shader?.let { shader ->
             shader.setLocalMatrix(
                 Matrix().apply { setTranslate(shimmerStartPos, 0f) }
             )
         }
-    }
-
-    companion object {
-        private const val LOG_TAG = "Trace"
     }
 
 }

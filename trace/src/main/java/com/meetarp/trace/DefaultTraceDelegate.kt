@@ -18,7 +18,7 @@ import androidx.core.widget.CompoundButtonCompat
 import kotlin.math.floor
 import kotlin.math.min
 
-internal object DefaultTraceDelegate : TraceDelegate {
+internal class DefaultTraceDelegate private constructor(): TraceDelegate {
 
     // This implementation will always return true.
     override fun handle(view: View, path: Path, offset: PointF): Boolean {
@@ -241,6 +241,24 @@ internal object DefaultTraceDelegate : TraceDelegate {
         path.addRoundRect(rect, rectRadius, rectRadius, Path.Direction.CW)
     }
 
-    private const val SPACE = 2.5f
-    private const val R_RECT_RADIUS = 10f
+    companion object {
+        private const val SPACE = 2.5f
+        private const val R_RECT_RADIUS = 10f
+
+        @Volatile
+        private var instance: DefaultTraceDelegate? = null
+
+        fun getInstance(): DefaultTraceDelegate {
+            return instance ?: run outer@{
+                synchronized(this) {
+                    instance ?: run inner@{
+                        val delegate = DefaultTraceDelegate()
+                        instance = delegate
+                        return@inner delegate
+                    }
+                }
+            }
+        }
+    }
+
 }

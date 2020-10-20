@@ -6,18 +6,22 @@ Android library that can trace views to create silhouettes. Written in Kotlin.
 Trace will iterate through the views in a given `View` hierarchy and create
 silhouettes based on whether or not the View implements the interface `Traceable`:
 
-If a View does implement `Traceable`, Trace will create a silhouette
-from the result of `Path` object returned by the `Traceable.trace` call.
+* If a View does implement `Traceable`, Trace will create a silhouette
+from the result of the `Path` object returned by the `Traceable.trace` call.
 
-If a View does not implement the `Traceable` interface, Trace will try to use the user-provided
+* If a View does not implement the `Traceable` interface, Trace will try to use the user-provided
 `TraceDelegate`, if one was supplied. If a delegate isn't provided or if `TraceDelegate.handle`
 does not return true, then Trace will hand-off to the `DefaultTraceDelegate`. The default
 delegate will handle some basic views elegantly but otherwise utilizes rounded rectangles
 to create a silhouette based on the boundaries of the view.
 
 If the lambda `shouldExcludeView` is defined and returns true for a given View, it will be
-ignored and not drawn. Said lambda can be specified when calling [TraceContainer.startShimmer]
-or when identifying the target for tracing via [Trace.of].
+ignored and not drawn. Said lambda can be specified when calling `TraceContainer.startShimmer`
+or when identifying the target for tracing via `Trace.of`.
+
+Additionally, `Trace` instances can have their shimmer animations synchronized by the use of a
+`ShimmerSynchronizer` - which can be designated either through `TraceContainer.startShimmer` or
+`Trace.syncWith`.
 
 #### Important Notes:
 * `Trace` uses a `Path` object with fill type `WINDING` (non-zero). Thus, please
@@ -32,7 +36,13 @@ or when identifying the target for tracing via [Trace.of].
 Available on jCenter.
 
 ```
-implementation 'com.meetarp:trace:$traceVersion'
+dependencies {
+    implementation "com.meetarp:trace:$traceVersion"
+}
+
+repositories {
+    jcenter()
+}
 ```
 
 ## Example
@@ -103,23 +113,172 @@ As in the example above, `Trace` is most easily utilized by wrapping a `ViewGrou
 a `TraceContainer`. Alternatively, it can be created and used manually by instantiating `Trace` and
 calling `Trace.of()`. Shimmer must be controlled programmatically.
 
-#### `TraceContainer` exposes the following:
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">
+        <h2>TraceContainer</h2>
+      </th>
+    </tr>
+    <tr>
+      <td>Type</td>
+      <td>Definition</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td valign="top"><code>variable</code></td>
+      <td><b><code>@ColorInt traceSilhouetteColor: Int</code></b>
+        <p>The color of the traced silhouette.</p>
+        <p>
+          Default: <code>android.R.color.darker_gray</code>
+          <kbd><img src="https://via.placeholder.com/15/aaaaaa/000000?text=+" alt="#aaaaaa" title="#aaaaaa" /></kbd>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>variable</code></td>
+      <td><b><code>@ColorInt traceShimmerColor: Int</code></b>
+        <p>The color of the shimmer that runs across the traced silhouette.</p>
+        <p>
+          Default: <code>android.R.color.white</code>
+          <kbd><img src="https://via.placeholder.com/15/ffffff/000000?text=+" alt="#ffffff" title="#ffffff" /></kbd>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>variable</code></td>
+      <td><b><code>crossFadeEnabled: Boolean</code></b>
+        <p>Toggle for enabling or disabling cross-fade animation when starting or stopping shimmer.</p>
+        <p>Default: <code>true</code></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>variable</code></td>
+      <td><b><code>crossFadeDuration: Long</code></b>
+        <p>If <code>crossFadeEnabled</code> is true, this value controls the duration of the cross-fade
+          animation.</p>
+        <p>Default: <code>750 ms</code></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td>
+        <b>
+<pre>
+startShimmer(
+  shimmerSpeed: Long = 1200L,
+  delegate: TraceDelegate? = null,
+  shouldExcludeView: ((View) -> Boolean)? = null,
+  crossFade: Boolean = true,
+  synchronizer: ShimmerSynchronizer? = null
+): Unit
+</pre>
+        </b>
+        <p>Start the shimmer animation with the given synchronizer (if provided), and with period duration for
+          the shimmer in milliseconds.</p>
+        <p>Trace will be performed with the given delegate, if provided. Views for which lambda invocations
+          return true will be ignored during trace.</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td><b>
+          <code>
+            stopShimmer(crossFade: Boolean = true): Unit
+            </code>
+        </b>
+        <p>Stops any active shimmer animation.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-| Method or attribute | Description | Defaults |
-|-|-|-|
-| `startShimmer(Long, TraceDelegate, Lambda<View->Boolean>)` | Start the shimmer animation with the given period duration for the shimmer in milliseconds.<br>Views for which lambda invocations return true will be ignored during trace. | Long = 1200 ms<br>TraceDelegate = null<br>Lambda = null |
-| `stopShimmer()` | End any shimmer animation that may be active. | N/A |
-| `app:trace_silhouetteColor` (XML) | Set the color used by Trace to draw the silhouettes. | `android.R.color.darker_gray` |
-| `app:trace_shimmerColor` (XML) | Set the color used by Trace for the shimmer. | `android.R.color.white` |
-
-#### `Trace` exposes the following:
-
-| Method | Description | Defaults |
-|-|-|-|
-| `of(View, TraceDelegate, Lambda<View->Boolean>)` | Identify the given View as the trace target.<br>Views for which lambda invocations return true will be ignored during trace. | N/A<br>TraceDelegate = null<br>Lambda = null |
-| `colored(ColorInt)` | Set the color of the traced silhouette(s). Argument must be a color integer. | Darker Gray |
-| `setColorResource(ColorRes)` | Set the color of the traced silhouette(s). Argument must be a color resource integer. | `android.R.color.darker_gray` |
-| `shimmerColored(ColorInt)` | Set the color of the shimmer. Argument must be a color integer. | White |
-| `setShimmerColorResource(ColorRes)` | Set the color of the shimmer. Argument must be a color resource integer. | `android.R.color.white` |
-| `startShimmer(Long)` | Start the shimmer animation. The argument provided is the period duration of the shimmer in milliseconds. | 1200 ms |
-| `stopShimmer()` | End any shimmer animation that may be active. | N/A |
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">
+        <h2>Trace</h2>
+      </th>
+    </tr>
+    <tr>
+      <td>Type</td>
+      <td>Definition</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td><b>
+<pre>
+of(
+  root: View,
+  delegate: TraceDelegate? = null,
+  shouldExcludeView: ((View) -> Boolean)? = null
+): Trace  
+</pre>
+        </b>
+        <p>Identify the given <code>View</code> as the trace target, utilizing the provided <code>TraceDelegate</code> for silhouettes, if applicable.</p>
+        <p>Views for which lambda invocations return true will be ignored during trace.</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td><b>
+          <code>
+            syncWith(sync: ShimmerSynchronizer?): Trace
+            </code>
+        </b>
+        <p>Set the <code>ShimmerSynchronizer</code> to be used to sync <code>Trace</code> instances with.</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td>
+        <b>
+          <code>colored(@ColorInt color: Int): Trace</code><br>
+          <code>setColorResource(@ColorRes color: Int): Trace</code>
+        </b>
+        <p>Set the color for the traced silhouette segments.</p>
+        <p>
+          Default: <code>android.R.color.darker_gray</code>
+          <kbd><img src="https://via.placeholder.com/15/aaaaaa/000000?text=+" alt="#aaaaaa" title="#aaaaaa" /></kbd>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td>
+        <b>
+          <code>shimmerColored(@ColorInt color: Int): Trace</code><br>
+          <code>setShimmerColorResource(@ColorRes color: Int): Trace</code>
+        </b>
+        <p>Set the color for the shimmer that animates when <code>startShimmer</code> is called.</p>
+        <p>
+          Default: <code>android.R.color.white</code>
+          <kbd><img src="https://via.placeholder.com/15/ffffff/000000?text=+" alt="#ffffff" title="#ffffff" /></kbd>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td><b>
+          <code>
+            startShimmer(shimmerSpeed: Long): Unit
+            </code>
+        </b>
+        <p>Start the shimmer animation over the traced silhouette.</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top"><code>function</code></td>
+      <td><b>
+          <code>
+            stopShimmer(): Unit
+            </code>
+        </b>
+        <p>Stop the shimmer animation over the traced silhouette.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>

@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply from: 'publish.gradle'
+apply plugin: 'org.jetbrains.dokka'
 
 android {
     compileSdkVersion 30
@@ -27,6 +29,18 @@ android {
         }
     }
 
+    // Currently doesn't work well... check back again later.
+    // Currently includes all protected/inherited methods of View subclasses too!
+    tasks.dokkaHtml.configure {
+        dokkaSourceSets {
+            named("main") {
+                noAndroidSdkLink.set(false)
+                includeNonPublic.set(false)
+            }
+        }
+        outputDirectory.set(file("$rootDir/dokka"))
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -45,5 +59,3 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
-
-apply from: 'publish.gradle'

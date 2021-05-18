@@ -1,4 +1,4 @@
-[![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)
+[![Latest release](https://img.shields.io/github/v/release/prateem/trace?label=latest&style=flat-square)](#)
 
 # Trace
 Android library that can trace views to create silhouettes. Written in Kotlin.
@@ -31,17 +31,21 @@ Additionally, `Trace` instances can have their shimmer animations synchronized b
     set to either `View.INVISIBLE` or `View.GONE`.
 
 ## Get it
-[![Latest release](https://img.shields.io/bintray/v/prateem/maven/trace?label=latest&style=flat-square)](#)
+[![Latest release](https://img.shields.io/github/v/release/prateem/trace?label=latest&style=flat-square)](#)
 
-Available on jCenter.
+Available via JitPack: https://jitpack.io/#prateem/Trace
 
 ```
 dependencies {
-    implementation "com.meetarp:trace:$traceVersion"
+    implementation "com.github.prateem:Trace:$traceVersion"
 }
 
-repositories {
-    jcenter()
+// in root build.gradle
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
 }
 ```
 
